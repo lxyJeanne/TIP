@@ -63,7 +63,7 @@ def process_images(folder_path, labels_csv, output_txt):
             grayscale_matrix = image_to_grayscale(image_path)
 
             # 将灰度值矩阵中的每个元素除以 256
-            normalized_grayscale_matrix = [pixel / 256.0 for pixel in grayscale_matrix[0]]
+            normalized_grayscale_matrix = [pixel / 256.0 for pixel in grayscale_matrix]
 
             # 获取标签
             label = image_labels.get(image_file, 'Unknown')
