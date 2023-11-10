@@ -14,8 +14,8 @@ def image_to_grayscale(image_path):
     grayscale_matrix = list(grayscale_img.getdata())
 
     # 将一维数组转换为二维矩阵
-    width, height = grayscale_img.size
-    grayscale_matrix = [grayscale_matrix[i * width:(i + 1) * width] for i in range(height)]
+    # width, height = grayscale_img.size
+    # grayscale_matrix = [grayscale_matrix[i * width:(i + 1) * width] for i in range(height)]
 
     return grayscale_matrix
 
