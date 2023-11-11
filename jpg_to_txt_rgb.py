@@ -11,8 +11,23 @@ def image_to_grayscale(image_path):
     green_matrix = list(g.getdata())
     blue_matrix = list(b.getdata())
     # combined_matrix = red_matrix[0] + green_matrix[0] + blue_matrix[0]
-    combined_matrix = red_matrix + green_matrix + blue_matrix
 
+
+    width, height = r.size
+    red_matrix = [red_matrix[i * width:(i + 1) * width] for i in range(height)]
+    green_matrix = [green_matrix[i * width:(i + 1) * width] for i in range(height)]
+    blue_matrix = [blue_matrix[i * width:(i + 1) * width] for i in range(height)]
+
+    # 去掉每个矩阵周围一圈的数值
+    red_matrix = [row[1:-1] for row in red_matrix[1:-1]]
+    green_matrix = [row[1:-1] for row in green_matrix[1:-1]]
+    blue_matrix = [row[1:-1] for row in blue_matrix[1:-1]]
+
+    red_matrix_fin = compression(red_matrix)
+    green_matrix_fin = compression(red_matrix)
+    blue_matrix_fin = compression(red_matrix)
+
+    combined_matrix = red_matrix_fin + green_matrix_fin + blue_matrix_fin
     # 将图像转换为灰度
     # grayscale_img = img.convert("L")
 
@@ -26,6 +41,22 @@ def image_to_grayscale(image_path):
     # return grayscale_matrix
     return combined_matrix
 
+def compression(matrix):
+
+    # 获取矩阵的行数和列数
+    rows = len(matrix)
+    cols = len(matrix[0])
+
+    # 创建一个新的矩阵，用于存储压缩后的结果
+    compressed_matrix = []
+    # 遍历矩阵的每个3x3子矩阵，计算其中位数并存储
+    for i in range(0, rows, 3):
+        for j in range(0, cols, 3):
+            submatrix = [matrix[x][y] for x in range(i, i + 3) for y in range(j, j + 3)]
+            median_value = sorted(submatrix)[4]  # 中值为排序后的第5个元素
+            compressed_matrix.append(median_value)
+
+    return compressed_matrix
 
 def load_labels(csv_path):
     # 初始化空字典用于存储标签
