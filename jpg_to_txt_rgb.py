@@ -24,8 +24,8 @@ def image_to_grayscale(image_path):
     blue_matrix = [row[1:-1] for row in blue_matrix[1:-1]]
 
     red_matrix_fin = compression(red_matrix)
-    green_matrix_fin = compression(red_matrix)
-    blue_matrix_fin = compression(red_matrix)
+    green_matrix_fin = compression(green_matrix)
+    blue_matrix_fin = compression(blue_matrix)
 
     combined_matrix = red_matrix_fin + green_matrix_fin + blue_matrix_fin
     # 将图像转换为灰度
