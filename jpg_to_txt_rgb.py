@@ -133,12 +133,9 @@ def output(label,matrix,txtfile):
 
 def adjust_contrast(matrix, factor):
     adjusted_matrix = [min(pixel * factor, 1) for pixel in matrix]
-    count_of_ones = sum(1 for pixel in adjusted_matrix if pixel == 1.0)
-    count_of_zeros = sum(1 for pixel in adjusted_matrix if pixel == 0.0)
-    print("nombre de 1:",count_of_ones)
-    print("nombre de 0:", count_of_zeros)
+    # count_of_ones = sum(1 for pixel in adjusted_matrix if pixel == 1.0)
+    # count_of_zeros = sum(1 for pixel in adjusted_matrix if pixel == 0.0)
     return adjusted_matrix
-
 
 
 def process_images(folder_path, labels_csv, output_txt):
@@ -180,8 +177,8 @@ def process_images(folder_path, labels_csv, output_txt):
                     # 将三个一维矩阵组合起来
                     matrix_flip_hi = matrix1 + matrix2 + matrix3
                     # output(label,matrix_flip_hi,txtfile)
-                    for c in range(-5, 5, 1):
-                        contrast = 1 + float(c)*0.02
+                    for c in range(-3, 1, 1):
+                        contrast = 1 + float(c)*0.03
                         matrix_flip_hi = adjust_contrast(matrix_flip_hi,contrast)
                         output(label, matrix_flip_hi, txtfile)
                 for i in range(4):
@@ -195,8 +192,8 @@ def process_images(folder_path, labels_csv, output_txt):
 
                     # 将三个一维矩阵组合起来
                     matrix_origin_i = matrix1 + matrix2 + matrix3
-                    for c in range(-5, 5, 1):
-                        contrast = 1 + float(c)*0.02
+                    for c in range(-3, 1, 1):
+                        contrast = 1 + float(c)*0.03
                         matrix_origin_i = adjust_contrast(matrix_origin_i,contrast)
                         output(label, matrix_origin_i, txtfile)
             else:
