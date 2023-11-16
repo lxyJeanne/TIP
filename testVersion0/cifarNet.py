@@ -100,7 +100,7 @@ test_loader=DataLoader(dataset=test_data,
                         shuffle=True,
                         drop_last=True)
 
-
+device=torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 Use_gpu = torch.cuda.is_available()
 model = models.vgg16(pretrained=True)
 print(f"Origine Model= {model}")
@@ -119,12 +119,12 @@ model.classifier = torch.nn.Sequential(torch.nn.Linear(25088, 4096),
 print(f"Modified Model= {model}")
 
 if Use_gpu:
-    model = model.cuda()
+    model = model.to(device)
 
 
 #Loss Fonction & Modulation of weight
 weights = [1, 100]
-class_weights = torch.FloatTensor(weights).to()
+class_weights = torch.FloatTensor(weights).to(device)
 loss_func = nn.CrossEntropyLoss(weight=class_weights)
 
 
@@ -152,6 +152,7 @@ for i in range(epoch):
     #start training
     for j,data in enumerate(train_loader):
         imgs,targets=data
+        imgs,targets=imgs.to(device),targets.to(device)
         # imgs=imgs.reshape(20,3,74,74)  #batch,channel,img.height, img.weight
         outputs=model(imgs)
         # print(f"outputs: {outputs}")
@@ -177,7 +178,7 @@ for i in range(epoch):
     with torch.no_grad():    #ensure this data would not be optimized
         for l,data in enumerate(test_loader):
             imgs,targets=data
-            imgs = imgs.reshape(20,3,74,74)
+            imgs,targets=imgs.to(device),targets.to(device)
 
             outputs=model(imgs)
             # outputs = cifar_train(imgs)
