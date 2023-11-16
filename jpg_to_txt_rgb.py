@@ -48,9 +48,6 @@ def matrix_flip_horizontal(matrix):
     matrix1 = matrix[:num_elements_per_matrix]
     matrix2 = matrix[num_elements_per_matrix:2 * num_elements_per_matrix]
     matrix3 = matrix[2 * num_elements_per_matrix:]
-    print("Matrix1 Size:", len(matrix1))
-    print("Matrix2 Size:", len(matrix2))
-    print("Matrix3 Size:", len(matrix3))
 
     # 将每个一维矩阵转换为二维矩阵
     matrix1_2d = [matrix1[i * 74:(i + 1) * 74] for i in range(74)]
@@ -134,6 +131,16 @@ def output(label,matrix,txtfile):
     txtfile.write(row_str + '\n')
 
 
+def adjust_contrast(matrix, factor):
+    adjusted_matrix = [min(pixel * factor, 1) for pixel in matrix]
+    count_of_ones = sum(1 for pixel in adjusted_matrix if pixel == 1.0)
+    count_of_zeros = sum(1 for pixel in adjusted_matrix if pixel == 0.0)
+    print("nombre de 1:",count_of_ones)
+    print("nombre de 0:", count_of_zeros)
+    return adjusted_matrix
+
+
+
 def process_images(folder_path, labels_csv, output_txt):
     # 获取文件夹中所有图片的文件名
     image_files = [f for f in os.listdir(folder_path) if f.lower().endswith(('.png', '.jpg', '.jpeg', '.gif', '.bmp'))]
@@ -172,8 +179,12 @@ def process_images(folder_path, labels_csv, output_txt):
 
                     # 将三个一维矩阵组合起来
                     matrix_flip_hi = matrix1 + matrix2 + matrix3
-                    output(label,matrix_flip_hi,txtfile)
-                for i in range(3):
+                    # output(label,matrix_flip_hi,txtfile)
+                    for c in range(-5, 5, 1):
+                        contrast = 1 + float(c)*0.02
+                        matrix_flip_hi = adjust_contrast(matrix_flip_hi,contrast)
+                        output(label, matrix_flip_hi, txtfile)
+                for i in range(4):
                     matrix_origin_h1 = rotate_90_degrees(matrix_origin_h1)
                     matrix_origin_h2 = rotate_90_degrees(matrix_origin_h2)
                     matrix_origin_h3 = rotate_90_degrees(matrix_origin_h3)
@@ -184,10 +195,13 @@ def process_images(folder_path, labels_csv, output_txt):
 
                     # 将三个一维矩阵组合起来
                     matrix_origin_i = matrix1 + matrix2 + matrix3
-                    output(label, matrix_origin_i, txtfile)
-
-            # 写入文本文件
-            output(label,normalized_grayscale_matrix,txtfile)
+                    for c in range(-5, 5, 1):
+                        contrast = 1 + float(c)*0.02
+                        matrix_origin_i = adjust_contrast(matrix_origin_i,contrast)
+                        output(label, matrix_origin_i, txtfile)
+            else:
+                # 写入文本文件
+                output(label,normalized_grayscale_matrix,txtfile)
 
 
 # 指定文件夹路径、标签CSV文件路径和输出文本文件名
