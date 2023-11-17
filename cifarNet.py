@@ -71,7 +71,7 @@ class MyDataset(Dataset):
         # Apply data augmentation only if the label is 1
         if y == 1 and self.transforms is not None:
             x = self.transforms(x)
-            counter=counter+1
+            
 
         return x,y
     #prepare length: len(dataset)
@@ -114,16 +114,18 @@ trainImageData=process_images(trainFolderPath,labels_csv)
 label_csv = 'train-labels.csv'
 trainFolder='real-resized'
 #train_data_origin = MyDataset(filepath=train_file, transforms=augmentation_transform)
-train_data = MyNewDataset(label_csv=label_csv,root_dir=trainFolder,transforms=augmentation_transform)
+myData = MyNewDataset(label_csv=label_csv,root_dir=trainFolder,transforms=augmentation_transform)
 #train_data = oversample_data(train_data_origin)
+train_data,test_data=torch.utils.data.random_split(myData,[0.9,0.1])
 train_loader = DataLoader(dataset=train_data,
                           batch_size=64,
                           shuffle=True,
                           drop_last=True)
 
-
+"""
 test_file="test.csv"
 test_data=MyNewDataset(label_csv=label_csv,root_dir=trainFolder)
+"""
 test_lst=[0,1]
 test_loader=DataLoader(dataset=test_data,
                         batch_size=64,
