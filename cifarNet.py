@@ -14,6 +14,7 @@ from torchvision.io import read_image
 # Ignore warnings
 import warnings
 warnings.filterwarnings("ignore")
+torch.cuda.empty_cache()
 
 class MyNewDataset(Dataset):
     def __init__(self,label_csv,root_dir,transforms=None):
@@ -30,7 +31,11 @@ class MyNewDataset(Dataset):
         if self.transforms:
             image=self.transforms(image)
         return image,label
-        
+
+class MyOverSampleDataset(Dataset):
+    def __init__(self,label_csv,transforms=None):
+        self.img_labels=pd.read_csv(label_csv)
+        self.transforms=transforms       
 
 
 
@@ -93,7 +98,7 @@ def oversample_data(dataset):
     labels = dataset.y.numpy()
 
     # 使用 RandomOverSampler 对少数类别进行过采样
-    oversampler = RandomOverSampler(sampling_strategy='minority', random_state=0)
+    oversampler = RandomOverSampler(sampling_strategy='minority', random_state=20)
     x_resampled, y_resampled = oversampler.fit_resample(dataset.x.numpy(), labels)
 
     # 转换为 PyTorch 张量
@@ -106,7 +111,7 @@ def oversample_data(dataset):
     return oversampled_dataset
     
 """   
-labels_csv = 'train-labels.csv'
+labels_csv = 'testLabel.csv'
 trainFolderPath='train-resizedtest'
 trainImageData=process_images(trainFolderPath,labels_csv)
 """
@@ -116,9 +121,9 @@ trainFolder='real-resized'
 #train_data_origin = MyDataset(filepath=train_file, transforms=augmentation_transform)
 myData = MyNewDataset(label_csv=label_csv,root_dir=trainFolder,transforms=augmentation_transform)
 #train_data = oversample_data(train_data_origin)
-train_data,test_data=torch.utils.data.random_split(myData,[0.9,0.1])
+train_data,val_data=torch.utils.data.random_split(myData,[0.9,0.1])
 train_loader = DataLoader(dataset=train_data,
-                          batch_size=64,
+                          batch_size=128,
                           shuffle=True,
                           drop_last=True)
 
@@ -127,8 +132,8 @@ test_file="test.csv"
 test_data=MyNewDataset(label_csv=label_csv,root_dir=trainFolder)
 """
 test_lst=[0,1]
-test_loader=DataLoader(dataset=test_data,
-                        batch_size=64,
+val_loader=DataLoader(dataset=val_data,
+                        batch_size=128,
                         shuffle=True,
                         drop_last=True)
 
@@ -139,16 +144,7 @@ print(f"Origine Model= {model}")
 
 for param in model.parameters():
     param.requires_grad = False  # 原模型中的参数冻结，不进行梯度更新
-"""
-'''定义新的全连接层并重新赋值给 model.classifier，重新设计分类器的结构，此时 parma.requires_grad 会被默认重置为 True'''
-model.classifier = torch.nn.Sequential(torch.nn.Linear(25088, 4096),
-                                       torch.nn.ReLU(),
-                                       torch.nn.Dropout(p=0.5),
-                                       torch.nn.Linear(4096, 4096),
-                                       torch.nn.ReLU(),
-                                       torch.nn.Dropout(p=0.5),
-                                       torch.nn.Linear(4096, 2))
-""" 
+
 model.fc=torch.nn.Linear(2048,2)
 print(f"Modified Model= {model}")
 
@@ -157,10 +153,10 @@ if Use_gpu:
 
 
 #Loss Fonction & Modulation of weight
-#weights = [1, 5]
-#class_weights = torch.FloatTensor(weights).to(device)
-#loss_func = nn.CrossEntropyLoss(weight=class_weights)
-loss_func = nn.CrossEntropyLoss()
+weights = [1, 50]
+class_weights = torch.FloatTensor(weights).to(device)
+loss_func = nn.CrossEntropyLoss(weight=class_weights)
+#loss_func = nn.CrossEntropyLoss()
 
 #Learning rate=0.01
 learning_rate=1e-3
@@ -210,14 +206,14 @@ for i in range(epoch):
     target_name=[str(i) for i in test_lst]
     # print(f"target_name= {target_name}")
     with torch.no_grad():    #ensure this data would not be optimized
-        for l,data in enumerate(test_loader):
+        for l,data in enumerate(val_loader):
             imgs,targets=data
             imgs,targets=imgs.to(device),targets.to(device)
 
             outputs=model(imgs)
             # outputs = cifar_train(imgs)
 
-            loss=loss_func(outputs)
+            #loss=loss_func(outputs)
             outputs_np=outputs.cpu().numpy()
             #Decide the prediction of outputs --[predict probability of each class]
             x_predict=np.argmax(outputs_np,axis=1)
@@ -236,8 +232,8 @@ for i in range(epoch):
             final_true.extend(y_true)
             final_predict.extend(x_predict)
 
-    print(f'final predict label list= {final_predict}')
-    print(f'final true label list= {final_true}')
+    #print(f'final predict label list= {final_predict}')
+    #print(f'final true label list= {final_true}')
     #report table fonction
     report = classification_report(final_true, final_predict)
     print(report)
